@@ -721,7 +721,7 @@ for epoch in range(resume_epoch, args.num_epochs+1):
 test_log.write('\nBest:%.2f  avgLast10: %.2f\n'%(max(acc_hist),sum(acc_hist[-10:])/10.0))
 test_log.close() 
 
-test_log.write('SSL Time: %f \n'%(total_time-warmup_time))
-test_log.write('Total Time: %f \n'%(total_time))
-test_log.close()
+time_log.write('SSL Time: %f \n'%(total_time-warmup_time))
+time_log.write('Total Time: %f \n'%(total_time))
+time_log.close()
 
