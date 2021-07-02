@@ -73,7 +73,7 @@ class MiniImagenet(Dataset):
             if self.transform is not None:
                 img = self.transform(img)   
             #out = {'image': img, 'target': target, 'meta': {'index': index}}
-            return img, target
+            return img, target, index
             
         elif self.mode=='test':
             img_path = self.val_imgs[index]
