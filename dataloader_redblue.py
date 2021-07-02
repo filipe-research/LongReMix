@@ -117,7 +117,7 @@ class red_miniImagenet32_dataloader():
         
     def run(self,mode,pred=[],prob=[]):
         if mode=='warmup':
-            all_dataset = MiniImagenet(dataset=self.dataset,  r=self.r, root_dir=self.root_dir, transform=self.transform_train, mode="all")                
+            all_dataset = MiniImagenet( r=self.r, root_dir=self.root_dir, transform=self.transform_train, mode="all")                
             trainloader = DataLoader(
                 dataset=all_dataset, 
                 batch_size=self.batch_size*2,
@@ -127,14 +127,14 @@ class red_miniImagenet32_dataloader():
 
                                      
         elif mode=='train':
-            labeled_dataset = MiniImagenet(dataset=self.dataset,  r=self.r, root_dir=self.root_dir, transform=self.transform_train, mode="labeled", pred=pred, probability=prob)              
+            labeled_dataset = MiniImagenet( r=self.r, root_dir=self.root_dir, transform=self.transform_train, mode="labeled", pred=pred, probability=prob)              
             labeled_trainloader = DataLoader(
                 dataset=labeled_dataset, 
                 batch_size=self.batch_size,
                 shuffle=True,
                 num_workers=self.num_workers)   
             
-            unlabeled_dataset = MiniImagenet(dataset=self.dataset,  r=self.r, root_dir=self.root_dir, transform=self.transform_train, mode="unlabeled",  pred=pred)                    
+            unlabeled_dataset = MiniImagenet( r=self.r, root_dir=self.root_dir, transform=self.transform_train, mode="unlabeled",  pred=pred)                    
             unlabeled_trainloader = DataLoader(
                 dataset=unlabeled_dataset, 
                 batch_size=self.batch_size,
@@ -149,7 +149,7 @@ class red_miniImagenet32_dataloader():
             return labeled_trainloader, unlabeled_trainloader, unlabeled_trainloader_map
         
         elif mode=='test':
-            test_dataset = MiniImagenet(dataset=self.dataset, r=self.r, root_dir=self.root_dir, transform=self.transform_test, mode='test')      
+            test_dataset = MiniImagenet( r=self.r, root_dir=self.root_dir, transform=self.transform_test, mode='test')      
             test_loader = DataLoader(
                 dataset=test_dataset, 
                 batch_size=self.batch_size,
@@ -158,7 +158,7 @@ class red_miniImagenet32_dataloader():
             return test_loader
         
         elif mode=='eval_train':
-            eval_dataset = MiniImagenet(dataset=self.dataset, r=self.r, root_dir=self.root_dir, transform=self.transform_test, mode='all', noise_file=self.noise_file)      
+            eval_dataset = MiniImagenet( r=self.r, root_dir=self.root_dir, transform=self.transform_test, mode='all', noise_file=self.noise_file)      
             eval_loader = DataLoader(
                 dataset=eval_dataset, 
                 batch_size=self.batch_size,
