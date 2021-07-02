@@ -66,22 +66,23 @@ class MiniImagenet(Dataset):
             img1 = self.transform(image) 
             img2 = self.transform(image) 
             return img1, img2  
-        elif (self.mode=='all') or (self.mode=='pretext'):
+        elif (self.mode=='all') :
             img_path = self.train_imgs[index]
             target = self.train_labels[img_path]     
             img = Image.open(self.root+img_path).convert('RGB')
             if self.transform is not None:
                 img = self.transform(img)   
-            out = {'image': img, 'target': target, 'meta': {'index': index}}
-            return out        
+            #out = {'image': img, 'target': target, 'meta': {'index': index}}
+            return img, target
+            
         elif self.mode=='test':
             img_path = self.val_imgs[index]
             target = self.val_labels[img_path]     
             img = Image.open(self.root+img_path).convert('RGB')   
             if self.transform is not None:
                 img = self.transform(img)
-            out = {'image': img, 'target': target, 'meta': {'index': index}}
-            return out
+            # out = {'image': img, 'target': target, 'meta': {'index': index}}
+            return img, target
         
             
            

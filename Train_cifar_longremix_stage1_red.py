@@ -171,7 +171,8 @@ def warmup(epoch,net,optimizer,dataloader,savelog=False):
     net.train()
     wm_loss = 0
     num_iter = (len(dataloader.dataset)//dataloader.batch_size)+1
-    for batch_idx, (inputs, labels, path) in enumerate(dataloader):      
+    #for batch_idx, (inputs, labels, path) in enumerate(dataloader):      
+    for batch_idx, (inputs, labels) in enumerate(dataloader):      
         inputs, labels = inputs.cuda(), labels.cuda() 
         optimizer.zero_grad()
         outputs = net(inputs)               
