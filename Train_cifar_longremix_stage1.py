@@ -605,9 +605,7 @@ for epoch in range(resume_epoch, args.num_epochs+1):
             idx_view_labeled = (pred1).nonzero()[0]
             idx_view_unlabeled = (1-pred1).nonzero()[0]
 
-            num_view_labeled = len(idx_view_labeled)
-            num_view_unlabeled = len(idx_view_unlabeled)
-            total = num_view_labeled + num_view_unlabeled
+            
 
             plot_model_view_histogram_loss(data=all_loss[0][-1].numpy(), idx_view_labeled=idx_view_labeled,
              idx_view_unlabeled=idx_view_unlabeled, inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )

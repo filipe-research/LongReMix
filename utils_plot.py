@@ -73,6 +73,11 @@ def plot_model_view_histogram_loss(data, idx_view_labeled, idx_view_unlabeled, i
     
     bins = compute_histogram_bins(data, 0.01)
     #plot alg sep loss view
+
+    num_view_labeled = len(idx_view_labeled)
+    num_view_unlabeled = len(idx_view_unlabeled)
+    total = num_view_labeled + num_view_unlabeled
+
     missed_clean = np.asarray([i for i in inds_clean if i not in idx_view_labeled])
     missed_noisy = np.asarray([i for i in inds_noisy if i not in idx_view_unlabeled])
     
@@ -92,6 +97,10 @@ def plot_model_view_histogram_pred(data, idx_view_labeled, idx_view_unlabeled, i
     bins = compute_histogram_bins(data, 0.01)
 
     #plot alg sep pred view
+    num_view_labeled = len(idx_view_labeled)
+    num_view_unlabeled = len(idx_view_unlabeled)
+    total = num_view_labeled + num_view_unlabeled
+
     missed_clean = np.asarray([i for i in inds_clean if i not in idx_view_labeled])
     missed_noisy = np.asarray([i for i in inds_noisy if i not in idx_view_unlabeled])
 
