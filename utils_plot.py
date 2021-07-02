@@ -43,11 +43,11 @@ def plot_histogram_loss_pred(data, inds_clean, inds_noisy, path, epoch):
     num_inds_noisy = len(inds_noisy)
     perc_clean = 100*num_inds_clean/float(num_inds_clean+num_inds_noisy)
 
-    plt.hist(data, bins=bins, range=(0., 1.), edgecolor='black', color='g')
-    plt.xlabel('Loss');
-    plt.ylabel('Number of data')
-    plt.savefig('%s/histogram_epoch%03d.png' % (path,epoch))
-    plt.clf()
+    # plt.hist(data, bins=bins, range=(0., 1.), edgecolor='black', color='g')
+    # plt.xlabel('Loss');
+    # plt.ylabel('Number of data')
+    # plt.savefig('%s/histogram_epoch%03d.png' % (path,epoch))
+    # plt.clf()
 
     plt.hist(data[inds_clean],bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
     if len(inds_noisy) >0:
@@ -61,7 +61,7 @@ def plot_histogram_loss_pred(data, inds_clean, inds_noisy, path, epoch):
 
     plt.hist(data[inds_clean],bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
     if len(inds_noisy) >0:
-        plt.hist(data[inds_noisy], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
+        plt.hist(data[inds_noisy], bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
     plt.xlabel('Prob');
     plt.ylabel('Number of data')
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
