@@ -158,7 +158,7 @@ class red_miniImagenet32_dataloader():
             return test_loader
         
         elif mode=='eval_train':
-            eval_dataset = MiniImagenet( r=self.r, root_dir=self.root_dir, transform=self.transform_test, mode='all', noise_file=self.noise_file)      
+            eval_dataset = MiniImagenet( r=self.r, root_dir=self.root_dir, transform=self.transform_test, mode='all')      
             eval_loader = DataLoader(
                 dataset=eval_dataset, 
                 batch_size=self.batch_size,
