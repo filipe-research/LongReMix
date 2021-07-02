@@ -109,7 +109,7 @@ def plot_model_view_histogram_pred(data, idx_view_labeled, idx_view_unlabeled, i
     plt.hist(data[missed_clean],bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, color='#fb8072', label='FN (%d| %.1f%%)'%(len(missed_clean),100*len(missed_clean)/float(len(inds_clean))))
     if len(inds_noisy) >0:
         plt.hist(data[missed_noisy],bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, color='k',label='FP (%d| %.1f%%)'%(len(missed_noisy),100*len(missed_noisy)/float(len(inds_noisy))))
-    plt.xlabel('Loss');
+    plt.xlabel('Pred');
     plt.ylabel('Number of data')
     plt.legend( bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
         ncol=2, mode="expand", borderaxespad=0.)
