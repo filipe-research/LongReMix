@@ -340,10 +340,10 @@ def save_models(epoch, net1, optimizer1, net2, optimizer2, save_path):
     state2 = ({'all_loss': all_loss,
                     'all_preds': all_preds,
                     'hist_preds': hist_preds,
-                    'inds_clean': inds_clean,
-                    'inds_noisy': inds_noisy,
-                    'clean_labels': clean_labels,
-                    'noisy_labels': noisy_labels,
+                    # 'inds_clean': inds_clean,
+                    # 'inds_noisy': inds_noisy,
+                    # 'clean_labels': clean_labels,
+                    # 'noisy_labels': noisy_labels,
                     'all_idx_view_labeled': all_idx_view_labeled,
                     'all_idx_view_unlabeled': all_idx_view_unlabeled,
                     'all_superclean': all_superclean
@@ -489,10 +489,10 @@ if incomplete == True:
 
 test_loader = loader.run('test')
 eval_loader = loader.run('eval_train') 
-noisy_labels = eval_loader.dataset.noise_label
-clean_labels = eval_loader.dataset.train_label 
-inds_noisy = np.asarray([ind for ind in range(len(noisy_labels)) if noisy_labels[ind] != clean_labels[ind]])
-inds_clean = np.delete(np.arange(len(noisy_labels)), inds_noisy)
+# noisy_labels = eval_loader.dataset.noise_label
+# clean_labels = eval_loader.dataset.train_label 
+# inds_noisy = np.asarray([ind for ind in range(len(noisy_labels)) if noisy_labels[ind] != clean_labels[ind]])
+# inds_clean = np.delete(np.arange(len(noisy_labels)), inds_noisy)
 all_superclean = [[],[]]
 
 total_time =  0
@@ -539,9 +539,9 @@ for epoch in range(resume_epoch, args.num_epochs+1):
             time_log.flush()  
 
 
-        if epoch % 5==0:
-            # plot_graphs(epoch)
-            plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+        # if epoch % 5==0:
+        #     # plot_graphs(epoch)
+        #     plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
 
 
         
@@ -596,20 +596,20 @@ for epoch in range(resume_epoch, args.num_epochs+1):
         end_time = round(time.time() - start_time)
         total_time+= end_time
 
-        if epoch%10==0:
-            # plot_graphs(epoch)
-            plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+        # if epoch%10==0:
+        #     # plot_graphs(epoch)
+        #     plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
 
-            idx_view_labeled = (pred1).nonzero()[0]
-            idx_view_unlabeled = (1-pred1).nonzero()[0]
+        #     idx_view_labeled = (pred1).nonzero()[0]
+        #     idx_view_unlabeled = (1-pred1).nonzero()[0]
 
             
 
-            plot_model_view_histogram_loss(data=all_loss[0][-1].numpy(), idx_view_labeled=idx_view_labeled,
-             idx_view_unlabeled=idx_view_unlabeled, inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+        #     plot_model_view_histogram_loss(data=all_loss[0][-1].numpy(), idx_view_labeled=idx_view_labeled,
+        #      idx_view_unlabeled=idx_view_unlabeled, inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
             
-            plot_model_view_histogram_pred(data=all_preds[0][-1].numpy(), idx_view_labeled=idx_view_labeled,
-             idx_view_unlabeled=idx_view_unlabeled, inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+        #     plot_model_view_histogram_pred(data=all_preds[0][-1].numpy(), idx_view_labeled=idx_view_labeled,
+        #      idx_view_unlabeled=idx_view_unlabeled, inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
 
             # if len(inds_noisy) >0:
             #     plot_tpr_fpr(noisy_labels=noisy_labels, clean_labels=clean_labels, prob=prob1)
@@ -628,13 +628,13 @@ for epoch in range(resume_epoch, args.num_epochs+1):
         end_time = round(time.time() - start_time)
         total_time+= end_time
 
-        if epoch%10==0:
-            guessed =guess_unlabeled(net1, net2, u_map_trainloader)
-            idx_unlabeled = (1-pred1).nonzero()[0] 
-            inds_guess_wrong = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] != guessed[ind]])
-            inds_guess_correct = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] == guessed[ind]])
+        # if epoch%10==0:
+        #     guessed =guess_unlabeled(net1, net2, u_map_trainloader)
+        #     idx_unlabeled = (1-pred1).nonzero()[0] 
+        #     # inds_guess_wrong = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] != guessed[ind]])
+        #     # inds_guess_correct = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] == guessed[ind]])
 
-            plot_guess_view(data=all_loss[0][-1].numpy(), inds_guess_correct=inds_guess_correct, inds_guess_wrong=inds_guess_wrong, path=path_plot, epoch=epoch)
+        #     plot_guess_view(data=all_loss[0][-1].numpy(), inds_guess_correct=inds_guess_correct, inds_guess_wrong=inds_guess_wrong, path=path_plot, epoch=epoch)
 
 
     save_models(epoch, net1, optimizer1, net2, optimizer2, path_exp)
