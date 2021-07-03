@@ -451,7 +451,7 @@ elif args.dataset=='cifar100':
     warm_up = 30
 
 loader = dataloader.cifar_dataloader(args.dataset,r=args.r,noise_mode=args.noise_mode,batch_size=args.batch_size,num_workers=5,\
-    root_dir=args.data_path,log=stats_log,noise_file='%s/%.2f_%s.json'%(args.data_path,args.r,args.noise_mode))
+    root_dir=args.data_path,log=stats_log,noise_file='noise/%s/%.2f_%s.json'%(args.dataset,args.r,args.noise_mode))
 
 print('| Building net')
 net1 = create_model()
