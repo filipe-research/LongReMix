@@ -493,7 +493,8 @@ clean_labels = eval_loader.dataset.train_label
 inds_noisy = np.asarray([ind for ind in range(len(noisy_labels)) if noisy_labels[ind] != clean_labels[ind]])
 inds_clean = np.delete(np.arange(len(noisy_labels)), inds_noisy)
 
-ckpt_sc = torch.load('hcs/high_confidence_samples_%s_%.2f_%s_cn%d.pth.tar'%(args.dataset, args.r,args.noise_mode,args.num_clean))
+#ckpt_sc = torch.load('hcs/high_confidence_samples_%s_%.2f_%s_cn%d.pth.tar'%(args.dataset, args.r,args.noise_mode,args.num_clean))
+ckpt_sc = torch.load('hcs/hcs_%s_%.2f_%s_cn%d_run%d.pth.tar'%(args.dataset, args.r, args.noise_mode,args.num_clean, args.run))
 all_superclean = ckpt_sc['all_superclean']
 
 total_time =  0
