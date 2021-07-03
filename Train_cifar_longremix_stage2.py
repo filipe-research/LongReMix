@@ -28,7 +28,7 @@ import sklearn.metrics as metrics
 import pickle
 import json
 from pathlib import Path
-from utils_plot import plot_guess_view, plot_histogram_loss_pred, plot_model_view_histogram_loss, plot_model_view_histogram_pred, plot_tpr_fpr
+from utils_plot import plot_guess_view_loss, plot_guess_view_pred,plot_histogram_loss, plot_histogram_pred,  plot_model_view_histogram_loss, plot_model_view_histogram_pred, plot_tpr_fpr
 
 import pandas as pd
 sns.set()
@@ -555,7 +555,10 @@ for epoch in range(resume_epoch, args.num_epochs+1):
 
         if epoch % 5==0:
             # plot_graphs(epoch)
-            plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+            #plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+            plot_histogram_loss(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+            plot_histogram_pred(data=all_preds[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+
 
 
         
@@ -577,7 +580,9 @@ for epoch in range(resume_epoch, args.num_epochs+1):
 
         if epoch%10==0:
             # plot_graphs(epoch)
-            plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+            #plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+            plot_histogram_loss(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+            plot_histogram_pred(data=all_preds[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
 
             idx_view_labeled = (pred1).nonzero()[0]
             idx_view_unlabeled = (1-pred1).nonzero()[0]
@@ -686,7 +691,8 @@ for epoch in range(resume_epoch, args.num_epochs+1):
             inds_guess_wrong = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] != guessed[ind]])
             inds_guess_correct = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] == guessed[ind]])
 
-            plot_guess_view(data=all_loss[0][-1].numpy(), inds_guess_correct=inds_guess_correct, inds_guess_wrong=inds_guess_wrong, path=path_plot, epoch=epoch)
+            plot_guess_view_loss(data=all_loss[0][-1].numpy(), inds_guess_correct=inds_guess_correct, inds_guess_wrong=inds_guess_wrong, path=path_plot, epoch=epoch)
+            plot_guess_view_pred(data=all_preds[0][-1].numpy(), inds_guess_correct=inds_guess_correct, inds_guess_wrong=inds_guess_wrong, path=path_plot, epoch=epoch)
             
             # guessed =guess_unlabeled(net1, net2, u_map_trainloader)
             # idx_unlabeled = (1-pred1).nonzero()[0] 

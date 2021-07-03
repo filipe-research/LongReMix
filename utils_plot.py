@@ -35,6 +35,30 @@ def plot_guess_view(data,inds_guess_correct, inds_guess_wrong, path, epoch):
     plt.savefig('%s/guess_prob_histogram_epoch%03d.png' % (path,epoch))
     plt.clf() 
 
+def plot_guess_view_loss(data,inds_guess_correct, inds_guess_wrong, path, epoch):
+    bins = compute_histogram_bins(data, 0.01)
+
+    plt.hist(data,bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='all')
+    plt.hist(data[inds_guess_correct], bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy_correct')
+    plt.hist(data[inds_guess_wrong], bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy_wrong')
+    plt.xlabel('Loss');
+    plt.ylabel('Number of data')
+    plt.legend()
+    plt.savefig('%s/guess_loss_histogram_epoch%03d.png' % (path,epoch))
+    plt.clf()  
+
+def plot_guess_view_pred(data,inds_guess_correct, inds_guess_wrong, path, epoch):
+    bins = compute_histogram_bins(data, 0.01)
+
+    plt.hist(data,bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='all')
+    plt.hist(data[inds_guess_correct],bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy_correct')
+    plt.hist(data[inds_guess_wrong], bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy_wrong')
+    plt.xlabel('prob');
+    plt.ylabel('number of data')
+    plt.legend()
+    plt.savefig('%s/guess_prob_histogram_epoch%03d.png' % (path,epoch))
+    plt.clf() 
+
 def plot_histogram_loss_pred(data, inds_clean, inds_noisy, path, epoch):
 
     bins = compute_histogram_bins(data, 0.01)
@@ -68,6 +92,45 @@ def plot_histogram_loss_pred(data, inds_clean, inds_noisy, path, epoch):
        ncol=2, mode="expand", borderaxespad=0.)
     plt.savefig('%s/preds_sep_epoch%03d.png' % (path,epoch))
     plt.clf() 
+
+def plot_histogram_loss(data, inds_clean, inds_noisy, path, epoch):
+
+    bins = compute_histogram_bins(data, 0.01)
+
+    num_inds_clean = len(inds_clean)
+    num_inds_noisy = len(inds_noisy)
+    perc_clean = 100*num_inds_clean/float(num_inds_clean+num_inds_noisy)
+
+    plt.hist(data[inds_clean],bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
+    if len(inds_noisy) >0:
+        plt.hist(data[inds_noisy], bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
+    plt.xlabel('Loss');
+    plt.ylabel('Number of data')
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+       ncol=2, mode="expand", borderaxespad=0.)
+    plt.savefig('%s/sep_loss_epoch%03d.png' % (path,epoch))
+    plt.clf()  
+
+def plot_histogram_pred(data, inds_clean, inds_noisy, path, epoch):
+
+    bins = compute_histogram_bins(data, 0.01)
+
+    num_inds_clean = len(inds_clean)
+    num_inds_noisy = len(inds_noisy)
+    perc_clean = 100*num_inds_clean/float(num_inds_clean+num_inds_noisy)
+
+    plt.hist(data[inds_clean],bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
+    if len(inds_noisy) >0:
+        plt.hist(data[inds_noisy], bins=bins, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
+    plt.xlabel('Prob');
+    plt.ylabel('Number of data')
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+       ncol=2, mode="expand", borderaxespad=0.)
+    plt.savefig('%s/preds_sep_epoch%03d.png' % (path,epoch))
+    plt.clf() 
+
+
+
 
 def plot_model_view_histogram_loss(data, idx_view_labeled, idx_view_unlabeled, inds_clean, inds_noisy, path, epoch):
     
