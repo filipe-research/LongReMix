@@ -446,10 +446,12 @@ else:
 
 
     
-if args.dataset=='cifar10':
-    warm_up = 10
-elif args.dataset=='cifar100':
-    warm_up = 30
+# if args.dataset=='cifar10':
+#     warm_up = 10
+# elif args.dataset=='cifar100':
+#     warm_up = 30
+
+warm_up=1
 
 loader = dataloader.red_miniImagenet32_dataloader(args.dataset,r=args.r,batch_size=args.batch_size,num_workers=5,\
     root_dir=args.data_path)
