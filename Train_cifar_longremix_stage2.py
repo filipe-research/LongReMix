@@ -355,7 +355,8 @@ def save_models(epoch, net1, optimizer1, net2, optimizer2, save_path):
                     'clean_labels': clean_labels,
                     'noisy_labels': noisy_labels,
                     'all_idx_view_labeled': all_idx_view_labeled,
-                    'all_idx_view_unlabeled': all_idx_view_unlabeled
+                    'all_idx_view_unlabeled': all_idx_view_unlabeled,
+                    'acc_hist':acc_hist
                     })
 
     if epoch%1==0:
@@ -467,13 +468,7 @@ CEloss = nn.CrossEntropyLoss()
 if args.noise_mode=='asym':
     conf_penalty = NegEntropy()
 
-all_loss = [[],[]] # save the history of losses from two networks
-all_preds = [[], []] # save the history of preds for two networks
-hist_preds = [[],[]]
-all_idx_view_labeled = [[],[]]
-all_idx_view_unlabeled = [[], []]
 
-resume_epoch = 0
 
 if incomplete == True:
     print('loading Model...\n')
@@ -485,6 +480,20 @@ if incomplete == True:
     net2.load_state_dict(ckpt['state_dict2'])
     optimizer1.load_state_dict(ckpt['optimizer1'])
     optimizer2.load_state_dict(ckpt['optimizer2'])
+    acc_hist = ckpt['acc_hist']
+    all_loss = ckpt['all_loss']
+    all_preds = ckpt['all_preds']
+    hist_preds = ckpt['hist_preds']
+    all_idx_view_labeled = ckpt['all_idx_view_labeled']
+    all_idx_view_unlabeled = ckpt['all_idx_view_unlabeled']
+else:
+    resume_epoch = 0
+    acc_hist = []
+    all_loss = [[],[]] # save the history of losses from two networks
+    all_preds = [[], []] # save the history of preds for two networks
+    hist_preds = [[],[]]
+    all_idx_view_labeled = [[],[]]
+    all_idx_view_unlabeled = [[], []]
 
 test_loader = loader.run('test')
 eval_loader = loader.run('eval_train') 
@@ -499,7 +508,7 @@ all_superclean = ckpt_sc['all_superclean']
 
 total_time =  0
 warmup_time = 0
-acc_hist = []
+
 
 maxsize = 0
 max_i = 0

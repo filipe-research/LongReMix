@@ -345,7 +345,8 @@ def save_models(epoch, net1, optimizer1, net2, optimizer2, save_path):
                     'noisy_labels': noisy_labels,
                     'all_idx_view_labeled': all_idx_view_labeled,
                     'all_idx_view_unlabeled': all_idx_view_unlabeled,
-                    'all_superclean': all_superclean
+                    'all_superclean': all_superclean,
+                    'acc_hist': acc_hist
                     })
     state3 = ({
                 'all_superclean': all_superclean
@@ -470,12 +471,6 @@ CEloss = nn.CrossEntropyLoss()
 if args.noise_mode=='asym':
     conf_penalty = NegEntropy()
 
-all_loss = [[],[]] # save the history of losses from two networks
-all_preds = [[], []] # save the history of preds for two networks 
-hist_preds = [[],[]]
-all_idx_view_labeled = [[],[]]
-all_idx_view_unlabeled = [[], []]
-
 resume_epoch = 0
 
 if incomplete == True:
@@ -488,6 +483,21 @@ if incomplete == True:
     net2.load_state_dict(ckpt['state_dict2'])
     optimizer1.load_state_dict(ckpt['optimizer1'])
     optimizer2.load_state_dict(ckpt['optimizer2'])
+    all_superclean = ckpt['all_superclean']
+    all_idx_view_labeled = ckpt['all_idx_view_labeled']
+    all_idx_view_unlabeled = ckpt['all_idx_view_unlabeled']
+    all_preds = ckpt['all_preds']
+    hist_preds = ckpt['hist_preds']
+    acc_hist = ckpt['acc_hist']
+    all_loss = ckpt['all_loss']
+else:
+    all_superclean = [[],[]]
+    all_idx_view_labeled = [[],[]]
+    all_idx_view_unlabeled = [[], []]
+    all_preds = [[], []] # save the history of preds for two networks 
+    hist_preds = [[],[]]
+    acc_hist = []
+    all_loss = [[],[]] # save the history of losses from two networks
 
 test_loader = loader.run('test')
 eval_loader = loader.run('eval_train') 
@@ -495,7 +505,7 @@ noisy_labels = eval_loader.dataset.noise_label
 clean_labels = eval_loader.dataset.train_label 
 inds_noisy = np.asarray([ind for ind in range(len(noisy_labels)) if noisy_labels[ind] != clean_labels[ind]])
 inds_clean = np.delete(np.arange(len(noisy_labels)), inds_noisy)
-all_superclean = [[],[]]
+
 
 total_time =  0
 warmup_time = 0
