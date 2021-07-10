@@ -468,7 +468,13 @@ CEloss = nn.CrossEntropyLoss()
 if args.noise_mode=='asym':
     conf_penalty = NegEntropy()
 
-
+resume_epoch = 0
+acc_hist = []
+all_loss = [[],[]] # save the history of losses from two networks
+all_preds = [[], []] # save the history of preds for two networks
+hist_preds = [[],[]]
+all_idx_view_labeled = [[],[]]
+all_idx_view_unlabeled = [[], []]
 
 if incomplete == True:
     print('loading Model...\n')
@@ -480,20 +486,14 @@ if incomplete == True:
     net2.load_state_dict(ckpt['state_dict2'])
     optimizer1.load_state_dict(ckpt['optimizer1'])
     optimizer2.load_state_dict(ckpt['optimizer2'])
-    acc_hist = ckpt['acc_hist']
-    all_loss = ckpt['all_loss']
-    all_preds = ckpt['all_preds']
-    hist_preds = ckpt['hist_preds']
-    all_idx_view_labeled = ckpt['all_idx_view_labeled']
-    all_idx_view_unlabeled = ckpt['all_idx_view_unlabeled']
-else:
-    resume_epoch = 0
-    acc_hist = []
-    all_loss = [[],[]] # save the history of losses from two networks
-    all_preds = [[], []] # save the history of preds for two networks
-    hist_preds = [[],[]]
-    all_idx_view_labeled = [[],[]]
-    all_idx_view_unlabeled = [[], []]
+    # acc_hist = ckpt['acc_hist']
+    # all_loss = ckpt['all_loss']
+    # all_preds = ckpt['all_preds']
+    # hist_preds = ckpt['hist_preds']
+    # all_idx_view_labeled = ckpt['all_idx_view_labeled']
+    # all_idx_view_unlabeled = ckpt['all_idx_view_unlabeled']
+
+    
 
 test_loader = loader.run('test')
 eval_loader = loader.run('eval_train') 
