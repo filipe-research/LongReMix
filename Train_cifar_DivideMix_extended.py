@@ -153,7 +153,9 @@ def train(epoch,net,net2,optimizer,labeled_trainloader,unlabeled_trainloader, sa
         sys.stdout.flush()
 
         if flag_model1:
+            global count_iter
             count_iter = count_iter + 1
+            
             if count_iter == max_iterations:
                 break
 
@@ -444,6 +446,8 @@ warmup_time = 0
 acc_hist = []
 
 max_iterations = 211922
+
+
 count_iter = 0
 
 for epoch in range(resume_epoch, args.num_epochs+1):   
