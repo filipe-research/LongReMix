@@ -41,7 +41,6 @@ parser.add_argument('--lambda_u', default=25, type=float, help='weight for unsup
 parser.add_argument('--p_threshold', default=0.5, type=float, help='clean probability threshold')
 parser.add_argument('--T', default=0.5, type=float, help='sharpening temperature')
 parser.add_argument('--num_epochs', default=300, type=int)
-parser.add_argument('--num_clean', default=5, type=int)
 parser.add_argument('--r', default=0.8, type=float, help='noise ratio')
 parser.add_argument('--id', default='')
 parser.add_argument('--seed', default=123)
@@ -60,7 +59,7 @@ torch.cuda.manual_seed_all(args.seed)
 
 
 # Training
-def train(epoch,net,net2,optimizer,labeled_trainloader,unlabeled_trainloader, savelog=False):
+def train(epoch,net,net2,optimizer,labeled_trainloader,unlabeled_trainloader, savelog=False, flag_model1=False):
     net.train()
     net2.eval() #fix one network and train the other
 
@@ -148,23 +147,17 @@ def train(epoch,net,net2,optimizer,labeled_trainloader,unlabeled_trainloader, sa
         optimizer.step()
 
         
-        
         sys.stdout.write('\r')
         sys.stdout.write('%s:%.1f-%s | Epoch [%3d/%3d] Iter[%3d/%3d]\t Labeled loss: %.2f  Unlabeled loss: %.2f'
                 %(args.dataset, args.r, args.noise_mode, epoch, args.num_epochs, batch_idx+1, num_iter, Lx.item(), Lu.item()))
         sys.stdout.flush()
 
-    if savelog:
-        train_loss /= len(labeled_trainloader.dataset)
-        train_loss_lx /= len(labeled_trainloader.dataset)
-        train_loss_u /= len(labeled_trainloader.dataset)
-        train_loss_penalty /= len(labeled_trainloader.dataset)
-        # Record training loss from each epoch into the writer
-        # writer_tensorboard.add_scalar('Train/Loss', train_loss.item(), epoch)
-        # writer_tensorboard.add_scalar('Train/Lx', train_loss_lx.item(), epoch)
-        # writer_tensorboard.add_scalar('Train/Lu', train_loss_u.item(), epoch)
-        # writer_tensorboard.add_scalar('Train/penalty', train_loss_penalty.item(), epoch)
-        # writer_tensorboard.close()
+        if flag_model1:
+            count_iter = count_iter + 1
+            if count_iter == max_iterations:
+                break
+
+
 
 def warmup(epoch,net,optimizer,dataloader,savelog=False):
     net.train()
@@ -190,11 +183,7 @@ def warmup(epoch,net,optimizer,dataloader,savelog=False):
                 %(args.dataset, args.r, args.noise_mode, epoch, args.num_epochs, batch_idx+1, num_iter, loss.item()))
         sys.stdout.flush()
 
-    if savelog:
-        wm_loss /= len(dataloader.dataset)
-        # Record training loss from each epoch into the writer
-        # writer_tensorboard.add_scalar('Warmup/Loss', wm_loss.item(), epoch)
-        # writer_tensorboard.close()
+
 
 def test(epoch,net1,net2):
     net1.eval()
@@ -345,78 +334,22 @@ def save_models(epoch, net1, optimizer1, net2, optimizer2, save_path):
                     'noisy_labels': noisy_labels,
                     'all_idx_view_labeled': all_idx_view_labeled,
                     'all_idx_view_unlabeled': all_idx_view_unlabeled,
-                    'all_superclean': all_superclean,
                     'acc_hist': acc_hist
                     })
-    state3 = ({
-                'all_superclean': all_superclean
-                })
 
 
     if epoch%1==0:
         fn2 = os.path.join(save_path, 'model_ckpt.pth.tar')
         torch.save(state, fn2)
-        # fn2_log = os.path.join(save_path, 'model_ckpt_hist.pth.tar')
-        # torch.save(state2, fn2_log)
-        #fn3 = os.path.join(save_path, 'superclean.pth.tar')
-        fn3 = os.path.join('hcs/', 'hcs_%s_%.2f_%s_cn%d_run%d.pth.tar'%(args.dataset, args.r, args.noise_mode,args.num_clean, args.run))
-        torch.save(state3, fn3)
-
-        # fn4 = os.path.join(save_path, 'superclean_%s_%.2f_%s_cn%d.json'%(args.dataset, args.r, args.noise_mode,args.num_clean))
-        # json.dump(all_superclean,open(fn4,"w"))
+        fn2_log = os.path.join(save_path, 'model_ckpt_hist.pth.tar')
+        torch.save(state2, fn2_log)
+        
 
 
-# def plot_graphs(epoch):
-#     num_inds_clean = len(inds_clean)
-#     num_inds_noisy = len(inds_noisy)
-#     perc_clean = 100*num_inds_clean/float(num_inds_clean+num_inds_noisy)
-
-#     plt.hist(all_loss[0][-1].numpy(), bins=20, range=(0., 1.), edgecolor='black', color='g')
-#     plt.xlabel('loss');
-#     plt.ylabel('number of data')
-#     plt.savefig('%s/histogram_epoch%03d.png' % (path_exp,epoch))
-#     # buf = io.BytesIO()
-#     # plt.savefig(buf, format='png')
-#     # buf.seek(0)
-#     # image = PIL.Image.open(buf)
-#     # image = transforms.ToTensor()(image)
-#     # writer_tensorboard.add_image('Histogram/loss_all', image, epoch)
-#     plt.clf()
-
-#     plt.hist(all_loss[0][-1].numpy()[inds_clean],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
-#     if len(inds_noisy) >0:
-#         plt.hist(all_loss[0][-1].numpy()[inds_noisy], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
-#     plt.xlabel('loss');
-#     plt.ylabel('number of data')
-#     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-#        ncol=2, mode="expand", borderaxespad=0.)
-#     plt.savefig('%s/sep_loss_epoch%03d.png' % (path_exp,epoch))
-#     buf = io.BytesIO()
-#     plt.savefig(buf, format='png')
-#     buf.seek(0)
-#     image = PIL.Image.open(buf)
-#     image = transforms.ToTensor()(image)
-#     # writer_tensorboard.add_image('Histogram/loss_sep', image, epoch)
-#     plt.clf()      
-
-#     plt.hist(all_preds[0][-1].numpy()[inds_clean],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
-#     if len(inds_noisy) >0:
-#         plt.hist(all_preds[0][-1].numpy()[inds_noisy], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
-#     plt.xlabel('prob');
-#     plt.ylabel('number of data')
-#     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-#        ncol=2, mode="expand", borderaxespad=0.)
-#     plt.savefig('%s/preds_sep_epoch%03d.jpg' % (path_exp,epoch))
-#     buf = io.BytesIO()
-#     plt.savefig(buf, format='png')
-#     buf.seek(0)
-#     image = PIL.Image.open(buf)
-#     image = transforms.ToTensor()(image)
-#     # writer_tensorboard.add_image('Histogram/prob_sep', image, epoch)
-#     plt.clf() 
 
 
-name_exp = 'longremix_stage1_cn%d'%args.num_clean
+
+name_exp = 'dividemix_extended'
 
 exp_str = '%s_%.2f_%s_%s_lu_%d'%(args.dataset, args.r, args.noise_mode, name_exp, int(args.lambda_u))
 if args.run >0:
@@ -483,19 +416,14 @@ if incomplete == True:
     net2.load_state_dict(ckpt['state_dict2'])
     optimizer1.load_state_dict(ckpt['optimizer1'])
     optimizer2.load_state_dict(ckpt['optimizer2'])
-    
     all_idx_view_labeled = ckpt['all_idx_view_labeled']
     all_idx_view_unlabeled = ckpt['all_idx_view_unlabeled']
     all_preds = ckpt['all_preds']
     hist_preds = ckpt['hist_preds']
     acc_hist = ckpt['acc_hist']
     all_loss = ckpt['all_loss']
-
-    superclean_path = os.path.join('hcs/', 'hcs_%s_%.2f_%s_cn%d_run%d.pth.tar'%(args.dataset, args.r, args.noise_mode,args.num_clean, args.run))
-    ckpt = torch.load(superclean_path)
-    all_superclean = ckpt['all_superclean']
 else:
-    all_superclean = [[],[]]
+    
     all_idx_view_labeled = [[],[]]
     all_idx_view_unlabeled = [[], []]
     all_preds = [[], []] # save the history of preds for two networks 
@@ -515,10 +443,13 @@ total_time =  0
 warmup_time = 0
 acc_hist = []
 
+max_iterations = 211922
+count_iter = 0
+
 for epoch in range(resume_epoch, args.num_epochs+1):   
     lr=args.lr
-    # if epoch >= 150:
-    #     lr /= 10      
+    if epoch >= 150:
+        lr /= 10      
     for param_group in optimizer1.param_groups:
         param_group['lr'] = lr       
     for param_group in optimizer2.param_groups:
@@ -577,38 +508,6 @@ for epoch in range(resume_epoch, args.num_epochs+1):
         all_idx_view_unlabeled[0].append(idx_view_unlabeled)
         all_idx_view_unlabeled[1].append((1-pred2).nonzero()[0])
 
-         #check hist of predclean
-        superclean = []
-        nclean = args.num_clean
-        #for ii in range(50000):
-        for ii in range(len(eval_loader.dataset)):
-            clean_lastn = True
-            for h_ep in all_idx_view_labeled[0][-nclean:]:   #check last nclean epochs
-                if ii not in h_ep:
-                    clean_lastn = False
-                    break
-            if clean_lastn:
-                superclean.append(ii)
-        print('\nsuperclean: %d'%len(superclean))
-        all_superclean[0].append(superclean)
-        pred1 = np.array([True if p in superclean else False for p in range(len(pred1))])
-
-         #check hist of predclean
-        superclean = []
-        nclean = args.num_clean
-        #for ii in range(50000):
-        for ii in range(len(eval_loader.dataset)):
-        
-            clean_lastn = True
-            for h_ep in all_idx_view_labeled[1][-nclean:]:   #check last nclean epochs
-                if ii not in h_ep:
-                    clean_lastn = False
-                    break
-            if clean_lastn:
-                superclean.append(ii)
-        all_superclean[1].append(superclean)
-        pred2 = np.array([True if p in superclean else False for p in range(len(pred2))])
-
         end_time = round(time.time() - start_time)
         total_time+= end_time
 
@@ -635,8 +534,10 @@ for epoch in range(resume_epoch, args.num_epochs+1):
         start_time = time.time()
         print('Train Net1')
         labeled_trainloader, unlabeled_trainloader, _ = loader.run('train',pred2,prob2) # co-divide
-        train(epoch,net1,net2,optimizer1,labeled_trainloader, unlabeled_trainloader,savelog=True) # train net1  
+        train(epoch,net1,net2,optimizer1,labeled_trainloader, unlabeled_trainloader,savelog=True, flag_model1=True) # train net1  
         
+        if count_iter >= max_iterations:
+            break
         
         print('\nTrain Net2')
         labeled_trainloader, unlabeled_trainloader, u_map_trainloader = loader.run('train',pred1,prob1) # co-divide
