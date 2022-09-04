@@ -16,9 +16,7 @@ import argparse
 import numpy as np
 from PreResNet import *
 from sklearn.mixture import GaussianMixture
-# import dataloader_cifar as dataloader
 import dataloader_redblue as dataloader
-# from torch.utils.tensorboard import SummaryWriter
 import pdb
 import io
 import PIL
@@ -155,24 +153,13 @@ def train(epoch,net,net2,optimizer,labeled_trainloader,unlabeled_trainloader, sa
                 %(args.dataset, args.r, args.noise_mode, epoch, args.num_epochs, batch_idx+1, num_iter, Lx.item(), Lu.item()))
         sys.stdout.flush()
 
-    if savelog:
-        train_loss /= len(labeled_trainloader.dataset)
-        train_loss_lx /= len(labeled_trainloader.dataset)
-        train_loss_u /= len(labeled_trainloader.dataset)
-        train_loss_penalty /= len(labeled_trainloader.dataset)
-        # Record training loss from each epoch into the writer
-        # writer_tensorboard.add_scalar('Train/Loss', train_loss.item(), epoch)
-        # writer_tensorboard.add_scalar('Train/Lx', train_loss_lx.item(), epoch)
-        # writer_tensorboard.add_scalar('Train/Lu', train_loss_u.item(), epoch)
-        # writer_tensorboard.add_scalar('Train/penalty', train_loss_penalty.item(), epoch)
-        # writer_tensorboard.close()
 
 def warmup(epoch,net,optimizer,dataloader,savelog=False):
     net.train()
     wm_loss = 0
     num_iter = (len(dataloader.dataset)//dataloader.batch_size)+1
     for batch_idx, (inputs, labels, index) in enumerate(dataloader):      
-    # for batch_idx, (inputs, labels) in enumerate(dataloader):      
+       
         inputs, labels = inputs.cuda(), labels.cuda() 
         optimizer.zero_grad()
         outputs = net(inputs)               
@@ -192,11 +179,6 @@ def warmup(epoch,net,optimizer,dataloader,savelog=False):
                 %(args.dataset, args.r, args.noise_mode, epoch, args.num_epochs, batch_idx+1, num_iter, loss.item()))
         sys.stdout.flush()
 
-    if savelog:
-        wm_loss /= len(dataloader.dataset)
-        # Record training loss from each epoch into the writer
-        # writer_tensorboard.add_scalar('Warmup/Loss', wm_loss.item(), epoch)
-        # writer_tensorboard.close()
 
 def test(epoch,net1,net2):
     net1.eval()
@@ -222,11 +204,6 @@ def test(epoch,net1,net2):
     test_log.write('Epoch:%d   Accuracy:%.2f\n'%(epoch,acc))
     test_log.flush()  
 
-    # Record loss and accuracy from the test run into the writer
-    test_loss /= len(test_loader.dataset)
-    # writer_tensorboard.add_scalar('Test/Loss', test_loss, epoch)
-    # writer_tensorboard.add_scalar('Test/Accuracy', acc, epoch)
-    # writer_tensorboard.close()
 
 def eval_train(model,all_loss, all_preds, all_hist, savelog=False):    
     model.eval()
@@ -251,12 +228,6 @@ def eval_train(model,all_loss, all_preds, all_hist, savelog=False):
                 preds[index[b]] = eval_preds[b][targets[b]]   
                 preds_classes[index[b]] =  eval_preds[b]
 
-    if savelog:
-        eval_loss /= len(eval_loader.dataset)
-        train_acc /= len(eval_loader.dataset)
-        # writer_tensorboard.add_scalar('eval/Loss', eval_loss.item(), epoch)
-        # writer_tensorboard.add_scalar('eval/acc', train_acc, epoch)
-        # writer_tensorboard.close()
 
     losses = (losses-losses.min())/(losses.max()-losses.min())    
     all_loss.append(losses)
@@ -358,65 +329,10 @@ def save_models(epoch, net1, optimizer1, net2, optimizer2, save_path):
     if epoch%1==0:
         fn2 = os.path.join(save_path, 'model_ckpt.pth.tar')
         torch.save(state, fn2)
-        # fn2_log = os.path.join(save_path, 'model_ckpt_hist.pth.tar')
-        # torch.save(state2, fn2_log)
-        #fn3 = os.path.join(save_path, 'superclean.pth.tar')
         fn3 = os.path.join('hcs/', 'hcs_%s_%.2f_%s_cn%d_run%d.pth.tar'%(args.dataset, args.r, args.noise_mode,args.num_clean, args.run))
         torch.save(state3, fn3)
 
-        # fn4 = os.path.join(save_path, 'superclean_%s_%.2f_%s_cn%d.json'%(args.dataset, args.r, args.noise_mode,args.num_clean))
-        # json.dump(all_superclean,open(fn4,"w"))
-
-
-# def plot_graphs(epoch):
-#     num_inds_clean = len(inds_clean)
-#     num_inds_noisy = len(inds_noisy)
-#     perc_clean = 100*num_inds_clean/float(num_inds_clean+num_inds_noisy)
-
-#     plt.hist(all_loss[0][-1].numpy(), bins=20, range=(0., 1.), edgecolor='black', color='g')
-#     plt.xlabel('loss');
-#     plt.ylabel('number of data')
-#     plt.savefig('%s/histogram_epoch%03d.png' % (path_exp,epoch))
-#     # buf = io.BytesIO()
-#     # plt.savefig(buf, format='png')
-#     # buf.seek(0)
-#     # image = PIL.Image.open(buf)
-#     # image = transforms.ToTensor()(image)
-#     # writer_tensorboard.add_image('Histogram/loss_all', image, epoch)
-#     plt.clf()
-
-#     plt.hist(all_loss[0][-1].numpy()[inds_clean],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
-#     if len(inds_noisy) >0:
-#         plt.hist(all_loss[0][-1].numpy()[inds_noisy], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
-#     plt.xlabel('loss');
-#     plt.ylabel('number of data')
-#     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-#        ncol=2, mode="expand", borderaxespad=0.)
-#     plt.savefig('%s/sep_loss_epoch%03d.png' % (path_exp,epoch))
-#     buf = io.BytesIO()
-#     plt.savefig(buf, format='png')
-#     buf.seek(0)
-#     image = PIL.Image.open(buf)
-#     image = transforms.ToTensor()(image)
-#     # writer_tensorboard.add_image('Histogram/loss_sep', image, epoch)
-#     plt.clf()      
-
-#     plt.hist(all_preds[0][-1].numpy()[inds_clean],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
-#     if len(inds_noisy) >0:
-#         plt.hist(all_preds[0][-1].numpy()[inds_noisy], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
-#     plt.xlabel('prob');
-#     plt.ylabel('number of data')
-#     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-#        ncol=2, mode="expand", borderaxespad=0.)
-#     plt.savefig('%s/preds_sep_epoch%03d.jpg' % (path_exp,epoch))
-#     buf = io.BytesIO()
-#     plt.savefig(buf, format='png')
-#     buf.seek(0)
-#     image = PIL.Image.open(buf)
-#     image = transforms.ToTensor()(image)
-#     # writer_tensorboard.add_image('Histogram/prob_sep', image, epoch)
-#     plt.clf() 
-
+        
 
 name_exp = 'longremix_stage1_cn%d'%args.num_clean
 
@@ -424,10 +340,6 @@ exp_str = '%s_%.2f_%s_%s_lu_%d'%(args.dataset, args.r, args.noise_mode, name_exp
 if args.run >0:
     exp_str = exp_str + '_run%d'%args.run
 path_exp='./checkpoint/' + exp_str
-# try:
-#     os.stat(path_exp)
-# except:
-#     os.mkdir(path_exp)
 
 path_plot = os.path.join(path_exp, 'plots')
 
@@ -447,8 +359,6 @@ else:
     stats_log=open('./checkpoint/%s/%s_%.2f_%s'%(exp_str, args.dataset,args.r,args.noise_mode)+'_stats.txt','a') 
     test_log=open('./checkpoint/%s/%s_%.2f_%s'%(exp_str,args.dataset,args.r,args.noise_mode)+'_acc.txt','a') 
     time_log=open('./checkpoint/%s/%s_%.2f_%s'%(exp_str, args.dataset,args.r,args.noise_mode)+'_time.txt','a') 
-
-# writer_tensorboard = SummaryWriter('tensor_runs/'+exp_str) 
   
 
 warm_up = 1
@@ -471,10 +381,6 @@ if args.noise_mode=='asym':
     conf_penalty = NegEntropy()
 
 all_loss = [[],[]] # save the history of losses from two networks
-
-
-
-
 
 resume_epoch = 0
 
@@ -504,11 +410,6 @@ else:
 
 test_loader = loader.run('test')
 eval_loader = loader.run('eval_train') 
-# noisy_labels = eval_loader.dataset.noise_label
-# clean_labels = eval_loader.dataset.train_label 
-# inds_noisy = np.asarray([ind for ind in range(len(noisy_labels)) if noisy_labels[ind] != clean_labels[ind]])
-# inds_clean = np.delete(np.arange(len(noisy_labels)), inds_noisy)
-
 
 total_time =  0
 warmup_time = 0
@@ -554,13 +455,6 @@ for epoch in range(resume_epoch, args.num_epochs+1):
             time_log.flush()  
 
 
-        # if epoch % 5==0:
-        #     # plot_graphs(epoch)
-        #     plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
-
-
-        
-   
     else:         
         start_time = time.time()
         prob1,all_loss[0], all_preds[0], hist_preds[0] =eval_train(net1,all_loss[0], all_preds[0], hist_preds[0], savelog=True)   
@@ -579,7 +473,7 @@ for epoch in range(resume_epoch, args.num_epochs+1):
          #check hist of predclean
         superclean = []
         nclean = args.num_clean
-        #for ii in range(50000):
+        
         for ii in range(len(eval_loader.dataset)):
             clean_lastn = True
             for h_ep in all_idx_view_labeled[0][-nclean:]:   #check last nclean epochs
@@ -595,7 +489,7 @@ for epoch in range(resume_epoch, args.num_epochs+1):
          #check hist of predclean
         superclean = []
         nclean = args.num_clean
-        #for ii in range(50000):
+        
         for ii in range(len(eval_loader.dataset)):
         
             clean_lastn = True
@@ -611,26 +505,7 @@ for epoch in range(resume_epoch, args.num_epochs+1):
         end_time = round(time.time() - start_time)
         total_time+= end_time
 
-        # if epoch%10==0:
-        #     # plot_graphs(epoch)
-        #     plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
-
-        #     idx_view_labeled = (pred1).nonzero()[0]
-        #     idx_view_unlabeled = (1-pred1).nonzero()[0]
-
-            
-
-        #     plot_model_view_histogram_loss(data=all_loss[0][-1].numpy(), idx_view_labeled=idx_view_labeled,
-        #      idx_view_unlabeled=idx_view_unlabeled, inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
-            
-        #     plot_model_view_histogram_pred(data=all_preds[0][-1].numpy(), idx_view_labeled=idx_view_labeled,
-        #      idx_view_unlabeled=idx_view_unlabeled, inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
-
-            # if len(inds_noisy) >0:
-            #     plot_tpr_fpr(noisy_labels=noisy_labels, clean_labels=clean_labels, prob=prob1)
-
-                
-
+        
         start_time = time.time()
         print('Train Net1')
         labeled_trainloader, unlabeled_trainloader, _ = loader.run('train',pred2,prob2) # co-divide
@@ -642,14 +517,6 @@ for epoch in range(resume_epoch, args.num_epochs+1):
         train(epoch,net2,net1,optimizer2,labeled_trainloader, unlabeled_trainloader,savelog=False) # train net2         
         end_time = round(time.time() - start_time)
         total_time+= end_time
-
-        # if epoch%10==0:
-        #     guessed =guess_unlabeled(net1, net2, u_map_trainloader)
-        #     idx_unlabeled = (1-pred1).nonzero()[0] 
-        #     # inds_guess_wrong = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] != guessed[ind]])
-        #     # inds_guess_correct = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] == guessed[ind]])
-
-        #     plot_guess_view(data=all_loss[0][-1].numpy(), inds_guess_correct=inds_guess_correct, inds_guess_wrong=inds_guess_wrong, path=path_plot, epoch=epoch)
 
 
     save_models(epoch, net1, optimizer1, net2, optimizer2, path_exp)

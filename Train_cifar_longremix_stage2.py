@@ -17,7 +17,6 @@ import numpy as np
 from PreResNet import *
 from sklearn.mixture import GaussianMixture
 import dataloader_cifar as dataloader
-# from torch.utils.tensorboard import SummaryWriter
 import pdb
 import io
 import PIL
@@ -164,18 +163,6 @@ def train(epoch,net,net2,optimizer,labeled_trainloader,unlabeled_trainloader, sa
             if cont_iters== max_iters:
                 break
 
-    if savelog:
-        train_loss /= len(labeled_trainloader.dataset)
-        train_loss_lx /= len(labeled_trainloader.dataset)
-        train_loss_u /= len(labeled_trainloader.dataset)
-        train_loss_penalty /= len(labeled_trainloader.dataset)
-        # Record training loss from each epoch into the writer
-        # writer_tensorboard.add_scalar('Train/Loss', train_loss.item(), epoch)
-        # writer_tensorboard.add_scalar('Train/Lx', train_loss_lx.item(), epoch)
-        # writer_tensorboard.add_scalar('Train/Lu', train_loss_u.item(), epoch)
-        # writer_tensorboard.add_scalar('Train/penalty', train_loss_penalty.item(), epoch)
-        # writer_tensorboard.close()
-
 def warmup(epoch,net,optimizer,dataloader,savelog=False):
     net.train()
     wm_loss = 0
@@ -201,12 +188,6 @@ def warmup(epoch,net,optimizer,dataloader,savelog=False):
                 %(args.dataset, args.r, args.noise_mode, epoch, args.num_epochs, batch_idx+1, num_iter, loss.item()))
         sys.stdout.flush()
 
-    # if savelog:
-    #     wm_loss /= len(dataloader.dataset)
-        # Record training loss from each epoch into the writer
-        # writer_tensorboard.add_scalar('Warmup/Loss', wm_loss.item(), epoch)
-        # writer_tensorboard.close()
-
 def test(epoch,net1,net2):
     net1.eval()
     net2.eval()
@@ -230,14 +211,7 @@ def test(epoch,net1,net2):
     print("\n| Test Epoch #%d\t Accuracy: %.2f%%\n" %(epoch,acc))  
     test_log.write('Epoch:%d   Accuracy:%.2f\n'%(epoch,acc))
     test_log.flush()  
-
-    # Record loss and accuracy from the test run into the writer
-    test_loss /= len(test_loader.dataset)
-    # writer_tensorboard.add_scalar('Test/Loss', test_loss, epoch)
-    # writer_tensorboard.add_scalar('Test/Accuracy', acc, epoch)
-    # writer_tensorboard.close()
-
-#def eval_train(model,all_loss):    
+   
 def eval_train(model,all_loss, all_preds, all_hist, savelog=False):    
     model.eval()
     losses = torch.zeros(len(eval_loader.dataset))    
@@ -260,13 +234,6 @@ def eval_train(model,all_loss, all_preds, all_hist, savelog=False):
                 losses[index[b]]=loss[b] 
                 preds[index[b]] = eval_preds[b][targets[b]]   
                 preds_classes[index[b]] =  eval_preds[b]
-
-    # if savelog:
-    #     eval_loss /= len(eval_loader.dataset)
-    #     train_acc /= len(eval_loader.dataset)
-    #     writer_tensorboard.add_scalar('eval/Loss', eval_loss.item(), epoch)
-    #     writer_tensorboard.add_scalar('eval/acc', train_acc, epoch)
-    #     writer_tensorboard.close()
 
     losses = (losses-losses.min())/(losses.max()-losses.min())    
     all_loss.append(losses)
@@ -365,55 +332,6 @@ def save_models(epoch, net1, optimizer1, net2, optimizer2, save_path):
         fn2_log = os.path.join(save_path, 'model_ckpt_hist.pth.tar')
         torch.save(state2, fn2_log)
 
-# def plot_graphs(epoch):
-#     num_inds_clean = len(inds_clean)
-#     num_inds_noisy = len(inds_noisy)
-#     perc_clean = 100*num_inds_clean/float(num_inds_clean+num_inds_noisy)
-
-    
-#     plt.hist(all_loss[0][-1].numpy(), bins=20, range=(0., 1.), edgecolor='black', color='g')
-#     plt.xlabel('loss');
-#     plt.ylabel('number of data')
-#     plt.savefig('%s/histogram_epoch%03d.jpg' % (path_exp,epoch))
-#     buf = io.BytesIO()
-#     plt.savefig(buf, format='png')
-#     buf.seek(0)
-#     image = PIL.Image.open(buf)
-#     image = transforms.ToTensor()(image)
-#     # writer_tensorboard.add_image('Histogram/loss_all', image, epoch)
-#     plt.clf()
-
-#     plt.hist(all_loss[0][-1].numpy()[inds_clean],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
-#     if len(inds_noisy) >0:
-#         plt.hist(all_loss[0][-1].numpy()[inds_noisy], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
-#     plt.xlabel('loss');
-#     plt.ylabel('number of data')
-#     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-#        ncol=2, mode="expand", borderaxespad=0.)
-#     plt.savefig('%s/sep_loss_epoch%03d.png' % (path_exp,epoch))
-#     buf = io.BytesIO()
-#     plt.savefig(buf, format='png')
-#     buf.seek(0)
-#     image = PIL.Image.open(buf)
-#     image = transforms.ToTensor()(image)
-#     # writer_tensorboard.add_image('Histogram/loss_sep', image, epoch)
-#     plt.clf()      
-
-#     plt.hist(all_preds[0][-1].numpy()[inds_clean],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='clean - %d (%.1f%%)'%(num_inds_clean,perc_clean))
-#     if len(inds_noisy) >0:
-#         plt.hist(all_preds[0][-1].numpy()[inds_noisy], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy- %d (%.1f%%)'%(num_inds_noisy,100-perc_clean))
-#     plt.xlabel('prob');
-#     plt.ylabel('number of data')
-#     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-#        ncol=2, mode="expand", borderaxespad=0.)
-#     plt.savefig('%s/preds_sep_epoch%03d.jpg' % (path_exp,epoch))
-#     buf = io.BytesIO()
-#     plt.savefig(buf, format='png')
-#     buf.seek(0)
-#     image = PIL.Image.open(buf)
-#     image = transforms.ToTensor()(image)
-#     # writer_tensorboard.add_image('Histogram/prob_sep', image, epoch)
-#     plt.clf() 
 
 name_exp = 'longremix_stage2_penalty%d_cn%d'%(args.yespenalty, args.num_clean)
 
@@ -421,10 +339,7 @@ exp_str = '%s_%.2f_%s_%s_lu_%d'%(args.dataset, args.r, args.noise_mode, name_exp
 if args.run >0:
     exp_str = exp_str + '_run%d'%args.run
 path_exp='./checkpoint/' + exp_str
-# try:
-#     os.stat(path_exp)
-# except:
-#     os.mkdir(path_exp)
+
 path_plot = os.path.join(path_exp, 'plots')
 Path(path_exp).mkdir(parents=True, exist_ok=True)
 Path(os.path.join(path_exp, 'savedDicts')).mkdir(parents=True, exist_ok=True)
@@ -441,9 +356,6 @@ else:
     stats_log=open('./checkpoint/%s/%s_%.2f_%s'%(exp_str, args.dataset,args.r,args.noise_mode)+'_stats.txt','a') 
     test_log=open('./checkpoint/%s/%s_%.2f_%s'%(exp_str,args.dataset,args.r,args.noise_mode)+'_acc.txt','a') 
     time_log=open('./checkpoint/%s/%s_%.2f_%s'%(exp_str, args.dataset,args.r,args.noise_mode)+'_time.txt','a') 
-
-# writer_tensorboard = SummaryWriter('tensor_runs/'+exp_str) 
-
 
     
 if args.dataset=='cifar10':
@@ -486,14 +398,6 @@ if incomplete == True:
     net2.load_state_dict(ckpt['state_dict2'])
     optimizer1.load_state_dict(ckpt['optimizer1'])
     optimizer2.load_state_dict(ckpt['optimizer2'])
-    # acc_hist = ckpt['acc_hist']
-    # all_loss = ckpt['all_loss']
-    # all_preds = ckpt['all_preds']
-    # hist_preds = ckpt['hist_preds']
-    # all_idx_view_labeled = ckpt['all_idx_view_labeled']
-    # all_idx_view_unlabeled = ckpt['all_idx_view_unlabeled']
-
-    
 
 test_loader = loader.run('test')
 eval_loader = loader.run('eval_train') 
@@ -502,7 +406,6 @@ clean_labels = eval_loader.dataset.train_label
 inds_noisy = np.asarray([ind for ind in range(len(noisy_labels)) if noisy_labels[ind] != clean_labels[ind]])
 inds_clean = np.delete(np.arange(len(noisy_labels)), inds_noisy)
 
-#ckpt_sc = torch.load('hcs/high_confidence_samples_%s_%.2f_%s_cn%d.pth.tar'%(args.dataset, args.r,args.noise_mode,args.num_clean))
 ckpt_sc = torch.load('hcs/hcs_%s_%.2f_%s_cn%d_run%d.pth.tar'%(args.dataset, args.r, args.noise_mode,args.num_clean, args.run))
 all_superclean = ckpt_sc['all_superclean']
 
@@ -561,16 +464,9 @@ for epoch in range(resume_epoch, args.num_epochs+1):
             time_log.write('Warmup: %f \n'%(warmup_time))
             time_log.flush()  
 
-
         if epoch % 5==0:
-            # plot_graphs(epoch)
-            #plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
             plot_histogram_loss(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
             plot_histogram_pred(data=all_preds[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
-
-
-
-        
    
     else:     
         start_time = time.time()    
@@ -588,8 +484,7 @@ for epoch in range(resume_epoch, args.num_epochs+1):
         total_time+= end_time
 
         if epoch%10==0:
-            # plot_graphs(epoch)
-            #plot_histogram_loss_pred(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
+        
             plot_histogram_loss(data=all_loss[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
             plot_histogram_pred(data=all_preds[0][-1].numpy(), inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
 
@@ -603,84 +498,6 @@ for epoch in range(resume_epoch, args.num_epochs+1):
              idx_view_unlabeled=idx_view_unlabeled, inds_clean=inds_clean, inds_noisy=inds_noisy, path=path_plot, epoch=epoch )
 
 
-            # all_idx_view_labeled[0].append(idx_view_labeled)
-            # all_idx_view_labeled[1].append((pred2).nonzero()[0])
-            # all_idx_view_unlabeled[0].append(idx_view_unlabeled)
-            # all_idx_view_unlabeled[1].append((1-pred2).nonzero()[0])
-
-            # num_view_labeled = len(idx_view_labeled)
-            # num_view_unlabeled = len(idx_view_unlabeled)
-            # total = num_view_labeled + num_view_unlabeled
-
-            # #plot alg sep loss view
-            # missed_clean = np.asarray([i for i in inds_clean if i not in idx_view_labeled])
-            # missed_noisy = np.asarray([i for i in inds_noisy if i not in idx_view_unlabeled])
-            
-            # plt.hist(all_loss[0][-1].numpy()[idx_view_labeled],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='alg_view_clean(%d| %.1f%%)'%(num_view_labeled,100*num_view_labeled/float(total)))
-            # plt.hist(all_loss[0][-1].numpy()[idx_view_unlabeled], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='alg_view_noisy(%d| %.1f%%)'%(num_view_unlabeled,100*num_view_unlabeled/float(total)))
-            # plt.hist(all_loss[0][-1].numpy()[missed_clean],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, color='#fb8072', label='FN (%d| %.1f%%)'%(len(missed_clean),100*len(missed_clean)/float(len(inds_clean))))
-            # if len(inds_noisy) >0:
-            #     plt.hist(all_loss[0][-1].numpy()[missed_noisy],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, color='k',label='FP (%d| %.1f%%)'%(len(missed_noisy),100*len(missed_noisy)/float(len(inds_noisy))))
-            # plt.xlabel('loss');
-            # plt.ylabel('number of data')
-            # plt.legend( bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-            #    ncol=2, mode="expand", borderaxespad=0.)
-            
-            # plt.savefig('%s/view_sep_loss_epoch%03d.png' % (path_exp,epoch))
-            # buf = io.BytesIO()
-            # plt.savefig(buf, format='png')
-            # buf.seek(0)
-            # image = PIL.Image.open(buf)
-            # image = transforms.ToTensor()(image)
-            # # writer_tensorboard.add_image('Histogram/view_loss_sep', image, epoch)
-            # plt.clf()  
-
-            # #plot algo sep prob view
-            # plt.hist(all_preds[0][-1].numpy()[idx_view_labeled],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='alg_view_clean(%d| %.1f%%)'%(num_view_labeled,100*num_view_labeled/float(total)))
-            # plt.hist(all_preds[0][-1].numpy()[idx_view_unlabeled], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='alg_view_noisy(%d| %.1f%%)'%(num_view_unlabeled,100*num_view_unlabeled/float(total)))
-            # plt.hist(all_preds[0][-1].numpy()[missed_clean],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, color='#fb8072', label='FN (%d| %.1f%%)'%(len(missed_clean),100*len(missed_clean)/float(len(inds_clean))))
-            # if len(inds_noisy) >0:
-            #     plt.hist(all_preds[0][-1].numpy()[missed_noisy],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, color='k',label='FP (%d| %.1f%%)'%(len(missed_noisy),100*len(missed_noisy)/float(len(inds_noisy))))
-            # plt.xlabel('loss');
-            # plt.ylabel('number of data')
-            # plt.legend( bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-            #    ncol=2, mode="expand", borderaxespad=0.)
-            
-            # plt.savefig('%s/view_sep_prob_epoch%03d.png' % (path_exp,epoch))
-            # buf = io.BytesIO()
-            # plt.savefig(buf, format='png')
-            # buf.seek(0)
-            # image = PIL.Image.open(buf)
-            # image = transforms.ToTensor()(image)
-            # # writer_tensorboard.add_image('Histogram/view_prob_sep', image, epoch)
-            # plt.clf()  
-
-            # if len(inds_noisy) >0:
-            #     clean = (np.array(noisy_labels)==np.array(clean_labels))
-            #     fpr, tpr, threshold = metrics.roc_curve(clean, prob1)
-            #     roc_auc = metrics.auc(fpr, tpr)
-
-            #     plt.plot(fpr, tpr, 'b', label = 'AUC = %0.2f' % roc_auc)
-            #     plt.legend(loc = 'lower right')
-            #     plt.plot([0, 1], [0, 1],'r--')
-            #     plt.xlim([0, 1])
-            #     plt.ylim([0, 1])
-            #     plt.ylabel('True Positive Rate')
-            #     plt.xlabel('False Positive Rate')
-            #     buf = io.BytesIO()
-            #     plt.savefig(buf, format='png')
-            #     buf.seek(0)
-            #     image = PIL.Image.open(buf)
-            #     image = transforms.ToTensor()(image)
-            #     # writer_tensorboard.add_image('Metrics/roc', image, epoch)
-            #     plt.clf()  
-                
-                # tpr = (sum(clean)-len(missed_clean))/sum(clean)
-                # fpr = len(missed_noisy)/(len(clean)-sum(clean))
-                # writer_tensorboard.add_scalar('Metrics/auc', roc_auc, epoch)
-                # writer_tensorboard.add_scalar('Metrics/tpr', tpr, epoch)
-                # writer_tensorboard.add_scalar('Metrics/fpr', fpr, epoch)
-
         start_time = time.time()
         print('Train Net1')
         labeled_trainloader, unlabeled_trainloader, _ = loader.run('train',pred2,prob2) # co-divide
@@ -693,7 +510,6 @@ for epoch in range(resume_epoch, args.num_epochs+1):
         end_time = round(time.time() - start_time)
         total_time+= end_time
 
-
         if epoch%10==0:
             guessed =guess_unlabeled(net1, net2, u_map_trainloader)
             idx_unlabeled = (1-pred1).nonzero()[0] 
@@ -702,41 +518,6 @@ for epoch in range(resume_epoch, args.num_epochs+1):
 
             plot_guess_view_loss(data=all_loss[0][-1].numpy(), inds_guess_correct=inds_guess_correct, inds_guess_wrong=inds_guess_wrong, path=path_plot, epoch=epoch)
             plot_guess_view_pred(data=all_preds[0][-1].numpy(), inds_guess_correct=inds_guess_correct, inds_guess_wrong=inds_guess_wrong, path=path_plot, epoch=epoch)
-            
-            # guessed =guess_unlabeled(net1, net2, u_map_trainloader)
-            # idx_unlabeled = (1-pred1).nonzero()[0] 
-            # inds_guess_wrong = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] != guessed[ind]])
-            # inds_guess_correct = np.asarray([idx_unlabeled[ind] for ind in range(len(idx_unlabeled)) if clean_labels[idx_unlabeled[ind]] == guessed[ind]])
-
-            # plt.hist(all_loss[0][-1].numpy(),bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='all')
-            # plt.hist(all_loss[0][-1].numpy()[inds_guess_correct], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy_correct')
-            # plt.hist(all_loss[0][-1].numpy()[inds_guess_wrong], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy_wrong')
-            # plt.xlabel('loss');
-            # plt.ylabel('number of data')
-            # plt.legend()
-            # plt.savefig('%s/guess_loss_histogram_epoch%03d.jpg' % (path_exp,epoch))
-            # buf = io.BytesIO()
-            # plt.savefig(buf, format='png')
-            # buf.seek(0)
-            # image = PIL.Image.open(buf)
-            # image = transforms.ToTensor()(image)
-            # # writer_tensorboard.add_image('Guess/loss', image, epoch)
-            # plt.clf()  
-
-            # plt.hist(all_preds[0][-1].numpy(),bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='all')
-            # plt.hist(all_preds[0][-1].numpy()[inds_guess_correct],bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy_correct')
-            # plt.hist(all_preds[0][-1].numpy()[inds_guess_wrong], bins=20, range=(0., 1.), edgecolor='black', alpha=0.5, label='noisy_wrong')
-            # plt.xlabel('prob');
-            # plt.ylabel('number of data')
-            # plt.legend()
-            # plt.savefig('%s/guess_prob_histogram_epoch%03d.jpg' % (path_exp,epoch))
-            # buf = io.BytesIO()
-            # plt.savefig(buf, format='png')
-            # buf.seek(0)
-            # image = PIL.Image.open(buf)
-            # image = transforms.ToTensor()(image)
-            # # writer_tensorboard.add_image('Guess/prob', image, epoch)
-            # plt.clf() 
 
     save_models(epoch, net1, optimizer1, net2, optimizer2, path_exp)
 
